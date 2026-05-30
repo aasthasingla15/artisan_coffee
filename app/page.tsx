@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import HeroCanvasAnimation from '@/components/HeroCanvasAnimation';
 import ProductShowcase from '@/components/ProductShowcase';
 import CoffeeProfile from '@/components/CoffeeProfile';
@@ -10,11 +12,16 @@ import RoasterySection from '@/components/RoasterySection';
 import StoreLocator from '@/components/StoreLocator';
 
 async function fetchProducts() {
-  const res = await fetch('/api/products', { cache: 'no-store' });
-  if (!res.ok) {
+  try {
+    const res = await fetch('/api/products', { cache: 'no-store' });
+    if (!res.ok) {
+      return [];
+    }
+    return res.json();
+  } catch (error) {
+    console.error('Unable to fetch products:', error);
     return [];
   }
-  return res.json();
 }
 
 export default async function Home() {

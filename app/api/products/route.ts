@@ -5,6 +5,8 @@ import Coffee, { ICoffeeProduct } from '@/models/Coffee';
 import { coffeeProducts } from '@/data/products';
 import { verifyAccessToken } from '@/utils/jwt';
 
+type ProductWithOptionalId = ICoffeeProduct & { _id?: Types.ObjectId; id?: string };
+
 function getAuthToken(req: Request) {
   const authHeader = req.headers.get('authorization');
   return authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -12,27 +14,31 @@ function getAuthToken(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    await dbConnect();
-    const count = await Coffee.countDocuments();
-    if (count === 0) {
-      await Coffee.insertMany(coffeeProducts.map((product) => ({
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        rating: product.rating,
-        image: product.image,
-        features: product.features,
-        reviews: product.reviews,
-        roastLevel: product.roastLevel,
-        flavorNotes: product.flavorNotes,
-        origin: product.origin,
-        acidity: 3,
-        body: 3,
-        strength: 3,
-        sweetness: 3,
-        milkCompatible: true,
-        slug: product.id
-      })));
+    try {
+      await dbConnect();
+      const count = await Coffee.countDocuments();
+      if (count === 0) {
+        await Coffee.insertMany(coffeeProducts.map((product) => ({
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          rating: product.rating,
+          image: product.image,
+          features: product.features,
+          reviews: product.reviews,
+          roastLevel: product.roastLevel,
+          flavorNotes: product.flavorNotes,
+          origin: product.origin,
+          acidity: 3,
+          body: 3,
+          strength: 3,
+          sweetness: 3,
+          milkCompatible: true,
+          slug: product.id
+        })));
+      }
+    } catch (dbError) {
+      console.error('Product list DB connection failed, using fallback product data:', dbError);
     }
 
     const url = new URL(req.url);
@@ -54,7 +60,17 @@ export async function GET(req: Request) {
       filter.origin = origin;
     }
 
-    const products = await Coffee.find(filter).lean();
+    let products: ProductWithOptionalId[] = [];
+    try {
+      await dbConnect();
+      products = (await Coffee.find(filter).lean()) as unknown as ProductWithOptionalId[];
+    } catch (dbError) {
+      console.error('Product list DB fetch failed, using fallback product data:', dbError);
+      products = (coffeeProducts.map((product) => ({
+        ...product,
+        id: product.id,
+      })) as unknown) as ProductWithOptionalId[];
+    }
 
     const filtered = products
       .filter((product) => {
@@ -76,11 +92,13 @@ export async function GET(req: Request) {
         }
       })
       .map((product) => {
-        const productDoc = product as unknown as ICoffeeProduct & { _id: Types.ObjectId };
+        const productDoc = product as ProductWithOptionalId;
+        const id = productDoc._id ? productDoc._id.toString() : productDoc.id;
+        const slug = productDoc.slug || id;
         return {
           ...productDoc,
-          id: productDoc._id.toString(),
-          slug: productDoc.slug || productDoc._id.toString()
+          id,
+          slug
         };
       });
 

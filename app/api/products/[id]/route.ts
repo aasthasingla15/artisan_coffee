@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { Types } from 'mongoose';
 import dbConnect from '@/lib/db';
 import Coffee, { ICoffeeProduct } from '@/models/Coffee';
+import { coffeeProducts } from '@/data/products';
 import { verifyAccessToken } from '@/utils/jwt';
+
+type ProductWithOptionalId = ICoffeeProduct & { _id?: Types.ObjectId; id?: string };
 
 function getAuthToken(req: Request) {
   const authHeader = req.headers.get('authorization');
@@ -13,13 +16,23 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const productId = url.pathname.split('/').pop() || '';
-    await dbConnect();
-    const product = await Coffee.findOne({ $or: [{ slug: productId }, { _id: productId }] }).lean();
+    let product: ProductWithOptionalId | null = null;
+
+    try {
+      await dbConnect();
+      product = await Coffee.findOne({ $or: [{ slug: productId }, { _id: productId }] }).lean() as unknown as ProductWithOptionalId | null;
+    } catch (dbError) {
+      console.error('Product detail DB fetch failed, using fallback data:', dbError);
+      product = coffeeProducts.find((item) => item.slug === productId || item.id === productId) as unknown as ProductWithOptionalId | null;
+    }
+
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
-    const productDoc = product as unknown as ICoffeeProduct & { _id: Types.ObjectId };
-    return NextResponse.json({ ...productDoc, id: productDoc._id.toString(), slug: productDoc.slug || productDoc._id.toString() }, { status: 200 });
+    const productDoc = product as ProductWithOptionalId;
+    const id = productDoc._id ? productDoc._id.toString() : productDoc.id;
+    const slug = productDoc.slug || id;
+    return NextResponse.json({ ...productDoc, id, slug }, { status: 200 });
   } catch (error) {
     console.error('Product fetch error:', error);
     return NextResponse.json({ error: 'Unable to fetch product' }, { status: 500 });
