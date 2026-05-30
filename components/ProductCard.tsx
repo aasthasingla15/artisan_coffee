@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,7 @@ interface ProductCardProps {
   index: number;
 }
 export default function ProductCard({ product, index }: ProductCardProps) {
+  const productSlug = product.slug || product.id;
   const { addToCart } = useCart();
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
@@ -62,21 +64,26 @@ export default function ProductCard({ product, index }: ProductCardProps) {
         </div>
         <span className="text-[#F5E6D3] font-semibold text-sm">({product.reviews.length})</span>
       </div>
-      {/* Coffee Image */}
-      <div className="w-full h-48 bg-[#2D1810] rounded-xl mb-5 overflow-hidden flex-shrink-0 relative">
-        <Image
-          src={product.image}
-          alt={t(`products.${product.id}.name`)}
-          width={400}
-          height={300}
-          className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-        />
-        {/* Favorite Heart */}
+      <div className="relative mb-5">
+        <Link href={`/products/${productSlug}`} className="group">
+          <div className="w-full h-48 bg-[#2D1810] rounded-xl overflow-hidden flex-shrink-0 relative transition-transform duration-300 group-hover:-translate-y-1">
+            <Image
+              src={product.image}
+              alt={t(`products.${product.id}.name`)}
+              width={400}
+              height={300}
+              className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+        </Link>
+
         <motion.button
           onClick={handleFavoriteClick}
           whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.9 }}
           className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors"
+          type="button"
         >
           <motion.svg
             className={`w-5 h-5 ${isFavorite(product.id) ? 'text-red-500 fill-red-500' : 'text-white'}`}
@@ -89,12 +96,12 @@ export default function ProductCard({ product, index }: ProductCardProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </motion.svg>
         </motion.button>
-        {/* Compare Button */}
         <motion.button
           onClick={handleCompareClick}
           whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.9 }}
           className="absolute top-3 right-16 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors"
+          type="button"
         >
           <motion.svg
             className={`w-5 h-5 ${isInCompare(product.id) ? 'text-blue-500' : 'text-white'}`}
@@ -109,9 +116,11 @@ export default function ProductCard({ product, index }: ProductCardProps) {
         </motion.button>
       </div>
       {/* Title & Description */}
-      <h3 className="text-2xl font-['Playfair_Display'] font-bold text-[#F5E6D3] mb-3">
-        {t(`products.${product.id}.name`)}
-      </h3>
+      <Link href={`/products/${productSlug}`} className="no-underline hover:text-[#F5E6D3]">
+        <h3 className="text-2xl font-['Playfair_Display'] font-bold text-[#F5E6D3] mb-3">
+          {t(`products.${product.id}.name`)}
+        </h3>
+      </Link>
       <p className="text-sm text-[#C9B8A0] mb-4 line-clamp-2 font-['Inter']">
         {t(`products.${product.id}.description`)}
       </p>

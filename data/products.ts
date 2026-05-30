@@ -8,6 +8,7 @@ export interface Review {
 
 export interface CoffeeProduct {
   id: string;
+  slug?: string;
   name: string;
   description: string;
   price: string;
@@ -18,6 +19,11 @@ export interface CoffeeProduct {
   roastLevel: 'light' | 'medium' | 'dark';
   flavorNotes: string[];
   origin: string;
+  acidity?: number;
+  body?: number;
+  strength?: number;
+  sweetness?: number;
+  milkCompatible?: boolean;
 }
 export const coffeeProducts: CoffeeProduct[] = [
   {

@@ -52,14 +52,21 @@ export default function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-6">
-          <ul className="flex gap-10 font-['Inter'] text-sm tracking-wide text-[#C9B8A0]">
-            {['Our Story', 'Roastery', 'Shop Coffee', 'Locations'].map((link, idx) => (
+          <ul className="flex gap-6 lg:gap-8 font-['Inter'] text-xs uppercase tracking-wider font-semibold text-[#C9B8A0]">
+            {[
+              { label: 'Shop Coffee', href: '/#products' },
+              { label: 'AI Match', href: '/recommendation' },
+              { label: 'Origin Map', href: '/origin-map' },
+              { label: 'Brew Tool', href: '/brew-calculator' },
+              { label: 'Subscriptions', href: '/subscription' },
+              { label: 'Admin', href: '/admin' }
+            ].map((link, idx) => (
               <li key={idx}>
                 <a 
-                  href={link === 'Shop Coffee' ? '#products' : '#'} 
+                  href={link.href} 
                   className="hover:text-[#F5E6D3] hover:text-shadow-sm transition-all duration-300 relative group"
                 >
-                  {link}
+                  {link.label}
                   <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#4F9C8F] transition-all duration-300 group-hover:w-full" />
                 </a>
               </li>

@@ -1,6 +1,4 @@
-'use client';
-import { useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import HeroCanvasAnimation from '@/components/HeroCanvasAnimation';
 import ProductShowcase from '@/components/ProductShowcase';
 import CoffeeProfile from '@/components/CoffeeProfile';
 import FeatureSection from '@/components/FeatureSection';
@@ -11,13 +9,17 @@ import StorySection from '@/components/StorySection';
 import RoasterySection from '@/components/RoasterySection';
 import StoreLocator from '@/components/StoreLocator';
 
-const HeroCanvasAnimation = dynamic(() => import('@/components/HeroCanvasAnimation'), { ssr: false });
+async function fetchProducts() {
+  const res = await fetch('/api/products', { cache: 'no-store' });
+  if (!res.ok) {
+    return [];
+  }
+  return res.json();
+}
 
-export default function Home() {
-  useEffect(() => {
-    // Ensure smooth scroll behavior
-    document.documentElement.style.scrollBehavior = 'smooth';
-  }, []);
+export default async function Home() {
+  const products = await fetchProducts();
+
   return (
     <main className="bg-[#1A0F0A] min-h-screen">
       {/* Hero: Scroll-Triggered Canvas Animation */}
@@ -28,7 +30,7 @@ export default function Home() {
       <CoffeeProfile />
       <MarqueeDivider />
       {/* Product Showcase Section */}
-      <ProductShowcase />
+      <ProductShowcase initialProducts={products} />
       {/* Feature Highlights Section */}
       <FeatureSection />
       {/* Final Call-to-Action */}

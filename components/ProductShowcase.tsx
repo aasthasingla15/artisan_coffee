@@ -3,21 +3,26 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useState, useMemo } from 'react';
 import ProductCard from './ProductCard';
-import { coffeeProducts } from '@/data/products';
+import { CoffeeProduct } from '@/data/products';
 
-export default function ProductShowcase() {
+interface ProductShowcaseProps {
+  initialProducts: CoffeeProduct[];
+}
+
+export default function ProductShowcase({ initialProducts }: ProductShowcaseProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [roastLevel, setRoastLevel] = useState('all');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50]);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
+  const products = useMemo(() => initialProducts ?? [], [initialProducts]);
 
   const filteredProducts = useMemo(() => {
     const [minPrice, maxPrice] = [Math.min(priceRange[0], priceRange[1]), Math.max(priceRange[0], priceRange[1])];
     const specialIds = ['affogato', 'irish-coffee', 'nitro-cold-brew', 'frappe'];
 
-    const filtered = coffeeProducts.filter(product => {
+    const filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = selectedType === 'all'
         || (selectedType === 'special' && specialIds.includes(product.id))
@@ -47,7 +52,7 @@ export default function ProductShowcase() {
     });
 
     return filtered;
-  }, [searchTerm, selectedType, sortBy, roastLevel, priceRange, selectedFlavors]);
+  }, [searchTerm, selectedType, sortBy, roastLevel, priceRange, selectedFlavors, products]);
 
   return (
     <section id="products" className="py-24 px-4 md:px-8 relative">
