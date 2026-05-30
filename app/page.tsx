@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import StorySection from '@/components/StorySection';
 import RoasterySection from '@/components/RoasterySection';
 import StoreLocator from '@/components/StoreLocator';
+import { coffeeProducts } from '@/data/products';
 
 async function fetchProducts() {
   try {
@@ -26,6 +27,7 @@ async function fetchProducts() {
 
 export default async function Home() {
   const products = await fetchProducts();
+  const initialProducts = products.length > 0 ? products : coffeeProducts;
 
   return (
     <main className="bg-[#1A0F0A] min-h-screen">
@@ -37,7 +39,7 @@ export default async function Home() {
       <CoffeeProfile />
       <MarqueeDivider />
       {/* Product Showcase Section */}
-      <ProductShowcase initialProducts={products} />
+      <ProductShowcase initialProducts={initialProducts} />
       {/* Feature Highlights Section */}
       <FeatureSection />
       {/* Final Call-to-Action */}
